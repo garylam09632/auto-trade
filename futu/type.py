@@ -1,5 +1,5 @@
 from enum import Enum, auto
 
-class StockMarketCode(Enum):
+class MarketCode(Enum):
     US = "US."
     HK = "HK."

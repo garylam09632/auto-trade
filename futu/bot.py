@@ -93,24 +93,47 @@ print(FUTU_OPEN_D_PORT)
 #     print('position_list_query error: ', data)
 # trd_ctx.close()
 
+# Get option code of the nearest strike date
+
+# Variables
+option_type = OptionType.CALL # ALL, CALL, PUT
+option_code_index = 1 # Which option code to choose
+
 quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11111)
-ret1, data1 = quote_ctx.get_option_expiration_date(code='HK.00700')
+ret_sub, err_message = quote_ctx.subscribe([code], [SubType.QUOTE], subscribe_push=False)
+ret, data = quote_ctx.get_stock_quote([code])
+if ret == RET_OK:
+    print(data)
+else:
+    print('error:', data)
+
+ret1, data1 = quote_ctx.get_option_expiration_date(code=code)
 
 filter1 = OptionDataFilter()
 filter1.delta_min = 0
-filter1.delta_max = 0.1
+# filter1.delta_max = +0.4
+# filter1.gamma_min = 0.01
+# filter1.open_interest_min = 100
 
 if ret1 == RET_OK:
-    expiration_date_list = data1['strike_time'].values.tolist()
-    for date in expiration_date_list:
-        ret2, data2 = quote_ctx.get_option_chain(code='HK.00700', start=date, end=date, data_filter=filter1)
-        if ret2 == RET_OK:
-            print(data2)
-            print(data2['code'][0])  # 取第一条的股票代码
-            print(data2['code'].values.tolist())  # 转为 list
-        else:
-            print('error:', data2)
-        time.sleep(3)
+    date = data1['strike_time'].values.tolist()[0] # Get the first strike date
+    print(date)
+    ret2, data2 = quote_ctx.get_option_chain(code=code, start=date, end=date, data_filter=filter1)
+    if ret2 == RET_OK:
+        print(data2)
+        # print(data2['code'][0])  # 取第一条的股票代码
+        # print(data2['code'].values.tolist())  # 转为 list
+    else:
+        print('error:', data2)
+    # for date in expiration_date_list:
+    #     ret2, data2 = quote_ctx.get_option_chain(code=code, start=date, end=date, data_filter=filter1)
+    #     if ret2 == RET_OK:
+    #         print(data2)
+    #         print(data2['code'][0])  # 取第一条的股票代码
+    #         print(data2['code'].values.tolist())  # 转为 list
+    #     else:
+    #         print('error:', data2)
+    #     time.sleep(10)
 else:
     print('error:', data1)
 quote_ctx.close()  # 结束后记得关闭当条连接，防止连接条数用尽
