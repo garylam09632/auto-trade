@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from futu import *
-from futu_config import *
+from config import *
+from helper import *
 
 app = Flask(__name__)
 
@@ -9,10 +10,13 @@ app = Flask(__name__)
 def place_order():
     req = request.get_json(force=True)
     code = req.get('code')
-    if code is None:
+    currency = req.get('currency')
+    if code is None or currency is None:
         return jsonify({ "success": False, "message": "Code not provided" })
-    code = f"US.{code}"
-    trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.US, host='127.0.0.1', port=11111, security_firm=SecurityFirm.FUTUINC)
+    market_code = get_market_code(currency)
+    code = f"{market_code}.{code}"
+    trd_market = get_trd_market(currency)
+    trd_ctx = OpenSecTradeContext(filter_trdmarket=trd_market, host='127.0.0.1', port=11111, security_firm=SecurityFirm.FUTUINC)
     ret, data = trd_ctx.acctradinginfo_query(order_type=OrderType.NORMAL, code=code, price=400, trd_env=TrdEnv.SIMULATE)
     if ret == RET_OK:
         print(data)
@@ -42,9 +46,12 @@ def place_order():
 def close_position():
     req = request.get_json(force=True)
     code = req.get('code')
-    if code is None:
+    currency = req.get('currency')
+    if code is None or currency is None:
         return jsonify({ "success": False, "message": "Code not provided" })
-    code = f"US.{code}"
+    market_code = get_market_code(currency)
+    code = f"{market_code}.{code}"
+    trd_market = get_trd_market(currency)
 
     # Trading context
     trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.US, host='127.0.0.1', port=11111,
