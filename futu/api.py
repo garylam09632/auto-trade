@@ -28,17 +28,17 @@ def place_shares_order(code, trd_market, action, direction):
         else:
             print(f"Target close qty: {target_order['qty']}")
             shares_qty = target_order['qty']
-    
+    print(f"action {action} == Action.Buy.value {Action.Buy}")
     # Determine if this action is valid by checking the action
-    if action == Action.Buy:
-        if direction == Direction.Call:
+    if action == Action.Buy.value:
+        if direction == Direction.Call.value:
             print("Place buy call/long order")
         else:
             if shares_qty == 0: return jsonify({ "success": False, "message": "No shares" })
             if shares_qty > 0: return jsonify({ "success": False, "message": "Exception: shares_qty > 0" })
             print("Place buy put/short order")
     else:
-        if direction == Direction.Call:
+        if direction == Direction.Call.value:
             if shares_qty == 0: return jsonify({ "success": False, "message": "No negative shares" })
             if shares_qty < 0: return jsonify({ "success": False, "message": "Exception: shares_qty < 0" })
             print("Place sell call/long order")
@@ -69,8 +69,9 @@ def place_order():
         return jsonify({ "success": False }), 400
     
     code = req.get('code')
-    action = TrdSide.BUY if req.get("action") == "Buy" else TrdSide.SELL
+    action = TrdSide.BUY if req.get("action") == Action.Buy else TrdSide.SELL
     direction = req.get('direction')
+    print(f"direction {direction}")
 
     currency = DEFAULT_TRADING_CURRENCY
     if req.get('currency') is not None:
