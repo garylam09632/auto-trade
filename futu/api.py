@@ -10,13 +10,19 @@ app = Flask(__name__)
 def place_order():
     req = request.get_json(force=True)
     code = req.get('code')
-    currency = req.get('currency')
+    currency = DEFAULT_TRADING_CURRENCY
+    if req.get('currency') is not None:
+        currency = req.get('currency')
+
+    print(f"currency = {currency}")
+    action = TrdSide.BUY if req.get("action") == "Buy" else TrdSide.SELL
     if code is None or currency is None:
         return jsonify({ "success": False, "message": "Code not provided" })
     market_code = get_market_code(currency)
-    code = f"{market_code}.{code}"
+    code = f"{market_code}{code}"
     trd_market = get_trd_market(currency)
-    trd_ctx = OpenSecTradeContext(filter_trdmarket=trd_market, host='127.0.0.1', port=11111, security_firm=SecurityFirm.FUTUINC)
+    print("trd_market:", trd_market)
+    trd_ctx = OpenSecTradeContext(filter_trdmarket=trd_market, host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT, security_firm=SecurityFirm.FUTUINC)
     ret, data = trd_ctx.acctradinginfo_query(order_type=OrderType.NORMAL, code=code, price=400, trd_env=TrdEnv.SIMULATE)
     if ret == RET_OK:
         print(data)
@@ -28,9 +34,9 @@ def place_order():
             qty=1,
             code=code,
             order_type=OrderType.MARKET,
-            trd_side=TrdSide.BUY,
+            trd_side=action,
             trd_env=FUTU_ENV,
-            session=Session.ETH
+            session=Session.RTH
         ) # 模拟交易，下单（如果是真实环境交易，在此之前需要先解锁交易密码）
         if ret == RET_OK:
             print(data)
@@ -54,7 +60,7 @@ def close_position():
     trd_market = get_trd_market(currency)
 
     # Trading context
-    trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.US, host='127.0.0.1', port=11111,
+    trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.US, host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT,
                                   security_firm=SecurityFirm.FUTUSECURITIES)
     ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, code=code)
     if ret == RET_OK:

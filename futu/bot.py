@@ -1,5 +1,6 @@
 from futu import *
 from config import *
+from helper import *
 import time
 
 code = 'US.TSLA'
@@ -10,10 +11,18 @@ code = 'US.TSLA'
 
 print(FUTU_OPEN_D_HOST)
 print(FUTU_OPEN_D_PORT)
+print(FUTU_ENV)
 
 # Place Order
 # trd_ctx = OpenSecTradeContext(host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT) # 创建交易对象
-# print(trd_ctx.place_order(price=500.0, qty=100, code="HK.00700", order_type=OrderType.MARKET, trd_side=TrdSide.BUY, trd_env=TrdEnv.SIMULATE))  # 模拟交易，下单（如果是真实环境交易，在此之前需要先解锁交易密码）
+# ret, data = trd_ctx.place_order(price=500.0, qty=1000, code="HK.01860", order_type=OrderType.MARKET, trd_side=TrdSide.BUY, trd_env=TrdEnv.SIMULATE)  # 模拟交易，下单（如果是真实环境交易，在此之前需要先解锁交易密码）
+# if ret == RET_OK:
+#     print(data)
+#     order = data.to_dict('records')
+#     print(order)
+# else:
+#     print(data)
+# trd_ctx.close()
 
 ## Get Order History
 # trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.HK, host='127.0.0.1', port=11111, security_firm=SecurityFirm.FUTUSECURITIES)
@@ -52,9 +61,8 @@ print(FUTU_OPEN_D_PORT)
 # trd_ctx.close()
 
 # Get position list
-# trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.US, host='127.0.0.1', port=11111,
-#                               security_firm=SecurityFirm.FUTUSECURITIES)
-# ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, code=code)
+# trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.HK, host='127.0.0.1', port=11111, security_firm=SecurityFirm.FUTUSECURITIES)
+# ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, code="HK.01860")
 # if ret == RET_OK:
 #     orders = data.to_dict('records')
 #     print(orders)
@@ -70,8 +78,8 @@ print(FUTU_OPEN_D_PORT)
 #
 #     if target_order is None:
 #         print('No order found')
-#
-#     print(f"Target close qty: {target_order['qty']}")
+#     else:
+#         print(f"Target close qty: {target_order['qty']}")
 #
 #     # ret, data = trd_ctx.place_order(
 #     #     price=500.0,
@@ -96,31 +104,70 @@ print(FUTU_OPEN_D_PORT)
 # Get option code of the nearest strike date
 
 # Variables
-option_type = OptionType.CALL # ALL, CALL, PUT
-option_code_index = 1 # Which option code to choose
+# option_type = OptionType.CALL # ALL, CALL, PUT
+# option_code_index = 1 # Which option code to choose
+#
+quote_ctx = OpenQuoteContext(host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT)
 
-quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11111)
-ret_sub, err_message = quote_ctx.subscribe([code], [SubType.QUOTE], subscribe_push=False)
-ret, data = quote_ctx.get_stock_quote([code])
-if ret == RET_OK:
-    print(data)
-else:
-    print('error:', data)
+# # Subscribe the stock to get the real-time price
+# ret_sub, err_message = quote_ctx.subscribe([code], [SubType.QUOTE, SubType.TICKER], subscribe_push=False, session=Session.ALL)
+# if ret_sub == RET_OK:
+#     ret, data = quote_ctx.get_stock_quote([code])
+#     if ret == RET_OK:
+#         print(data)
+#     else:
+#         print('error:', data)
+# else:
+#     print('subscription failed', err_message)
+# quote_ctx.close() # 结束后记得关闭当条连接，防止连接条数用尽
 
 ret1, data1 = quote_ctx.get_option_expiration_date(code=code)
 
 filter1 = OptionDataFilter()
 filter1.delta_min = 0
+
+target_price = 345
 # filter1.delta_max = +0.4
 # filter1.gamma_min = 0.01
 # filter1.open_interest_min = 100
 
 if ret1 == RET_OK:
     date = data1['strike_time'].values.tolist()[0] # Get the first strike date
-    print(date)
-    ret2, data2 = quote_ctx.get_option_chain(code=code, start=date, end=date, data_filter=filter1)
+    print('Strike date:' + date)
+    ret2, data2 = quote_ctx.get_option_chain(code=code, start=date, end=date)
     if ret2 == RET_OK:
-        print(data2)
+        arr = data2['name'].values.tolist()
+
+        price_tolerance = 5.0  # How far from target price to consider
+        max_options_per_type = 6  # Max options to show per call/put
+
+        # Initialize collections
+        calls = []
+        puts = []
+
+        for code in arr:
+            parts = code.split(' ')
+            option_type = parts[2][-1]  # 'C' or 'P'
+            price = float(parts[2][:-1])  # Convert price to float
+
+            # Check if price is within tolerance (including target price)
+            if abs(price - target_price) <= price_tolerance:
+                if option_type == 'C':
+                    calls.append((abs(price - target_price), code))  # (distance, code)
+                else:
+                    puts.append((abs(price - target_price), code))
+
+        # Sort by proximity to target price and limit results
+        calls = sorted(calls, key=lambda x: x[0])[:max_options_per_type]
+        puts = sorted(puts, key=lambda x: x[0])[:max_options_per_type]
+
+        # Combine and extract just the codes
+        results = [item[1] for item in calls + puts]
+
+        print("Options near target price:")
+        for option in results:
+            print(convert_option_format(option))
+
         # print(data2['code'][0])  # 取第一条的股票代码
         # print(data2['code'].values.tolist())  # 转为 list
     else:
