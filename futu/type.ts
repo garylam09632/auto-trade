@@ -1,12 +1,13 @@
 type TradeType = "SHARES" | "OPTION";
 type Action = "BUY" | "SELL";
-type OptionDirection = "CALL" | "PUT";
+type Direction = "CALL" | "PUT";
 type Currency = "USD" | "HKD";
 
 type Alert = {
   code: string;
+  price: number;
   type: TradeType;
   action: Action;
-  direction?: OptionDirection;
+  direction?: Direction;
   currency?: Currency;
 }

@@ -21,6 +21,7 @@ class Currency(Enum):
 @dataclass
 class Alert:
     code: str
+    price: float
     type: TradeType
     action: Action
     direction: Optional[Direction] = None

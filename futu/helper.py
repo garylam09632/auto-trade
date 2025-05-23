@@ -1,4 +1,4 @@
-from futu import TrdMarket
+from futu import *
 
 
 def get_market_code(currency):
@@ -11,6 +11,10 @@ def get_trd_market(currency):
         return TrdMarket.US
     return TrdMarket.HK
 
+def get_security_firm(currency):
+    if currency.upper() == 'USD':
+        return SecurityFirm.FUTUINC
+    return SecurityFirm.FUTUSECURITIES
 
 def convert_option_format(option_code):
     """Convert from 'TSLA 250523 262.50P' to 'US.TSLA250523C570000'"""

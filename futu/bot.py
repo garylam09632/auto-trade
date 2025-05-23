@@ -1,6 +1,7 @@
 from futu import *
 from config import *
 from helper import *
+from type import *
 import time
 
 code = 'US.TSLA'
@@ -12,6 +13,7 @@ code = 'US.TSLA'
 print(FUTU_OPEN_D_HOST)
 print(FUTU_OPEN_D_PORT)
 print(FUTU_ENV)
+print(Action.Buy.value)
 
 # Place Order
 # trd_ctx = OpenSecTradeContext(host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT) # 创建交易对象
