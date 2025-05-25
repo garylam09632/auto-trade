@@ -49,6 +49,7 @@ def place_shares_order(symbol, price, currency, action):
         allow_assets = available_assets
 
     print(f"allow_assets {allow_assets}")
+    print(f"price {price}")
     shares_qty = allow_assets / price # Shares qty available for long and short (estimate qty only since the price is from request body instead of real-time quote)
     print(f"shares_qty {shares_qty}")         
 
@@ -107,11 +108,11 @@ def place_shares_order(symbol, price, currency, action):
 @app.route('/futu/place-order', methods=['POST'])
 def place_order():
     req = request.get_json(force=True)
-    if req.get('action') is None:
+    if req.get('action') is None or req.get('price') is None:
         return jsonify({ "success": False }), 400
     
     code = req.get('code')
-    price = req.get('price')
+    price = float(req.get('price'))
     action = req.get('action')
     currency = req.get('currency')
 

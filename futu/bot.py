@@ -10,10 +10,10 @@ code = 'US.TSLA'
 # print(quote_ctx.get_market_snapshot('HK.00700'))  # 获取港股 HK.00700 的快照数据
 # quote_ctx.close() # 关闭对象，防止连接条数用尽
 
-print(FUTU_OPEN_D_HOST)
-print(FUTU_OPEN_D_PORT)
-print(FUTU_ENV)
-print(Action.Buy.value)
+# print(FUTU_OPEN_D_HOST)
+# print(FUTU_OPEN_D_PORT)
+# print(FUTU_ENV)
+# print(Action.Buy.value)
 
 # Place Order
 # trd_ctx = OpenSecTradeContext(host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT) # 创建交易对象
@@ -63,26 +63,26 @@ print(Action.Buy.value)
 # trd_ctx.close()
 
 # Get position list
-# trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.HK, host='127.0.0.1', port=11111, security_firm=SecurityFirm.FUTUSECURITIES)
-# ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, code="HK.01860")
+# trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.US, host='127.0.0.1', port=11111, security_firm=SecurityFirm.FUTUINC)
+# ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV)
 # if ret == RET_OK:
 #     orders = data.to_dict('records')
 #     print(orders)
 #     if len(orders) == 0:  # 如果持仓列表不为空
 #         print('No order exists')
-#
+
 #     # Find the target order to close
 #     target_order = None
 #     for order in orders:
 #         if order['code'] == code:
 #             target_order = order
 #             break
-#
+
 #     if target_order is None:
 #         print('No order found')
 #     else:
 #         print(f"Target close qty: {target_order['qty']}")
-#
+
 #     # ret, data = trd_ctx.place_order(
 #     #     price=500.0,
 #     #     qty=1,
@@ -111,7 +111,7 @@ print(Action.Buy.value)
 #
 quote_ctx = OpenQuoteContext(host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT)
 
-# # Subscribe the stock to get the real-time price
+# # # Subscribe the stock to get the real-time price
 # ret_sub, err_message = quote_ctx.subscribe([code], [SubType.QUOTE, SubType.TICKER], subscribe_push=False, session=Session.ALL)
 # if ret_sub == RET_OK:
 #     ret, data = quote_ctx.get_stock_quote([code])
@@ -128,16 +128,17 @@ ret1, data1 = quote_ctx.get_option_expiration_date(code=code)
 filter1 = OptionDataFilter()
 filter1.delta_min = 0
 
-target_price = 345
-# filter1.delta_max = +0.4
-# filter1.gamma_min = 0.01
-# filter1.open_interest_min = 100
+target_price = 338
+filter1.delta_max = +0.4
+filter1.gamma_min = 0.01
+filter1.open_interest_min = 100
 
 if ret1 == RET_OK:
     date = data1['strike_time'].values.tolist()[0] # Get the first strike date
     print('Strike date:' + date)
     ret2, data2 = quote_ctx.get_option_chain(code=code, start=date, end=date)
     if ret2 == RET_OK:
+        print(data2.to_dict('records'))
         arr = data2['name'].values.tolist()
 
         price_tolerance = 5.0  # How far from target price to consider
@@ -186,3 +187,30 @@ if ret1 == RET_OK:
 else:
     print('error:', data1)
 quote_ctx.close()  # 结束后记得关闭当条连接，防止连接条数用尽
+
+trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.US, host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT, security_firm=SecurityFirm.FUTUINC)
+
+ret, data = trd_ctx.get_acc_list()
+if ret == RET_OK:
+    print(data)
+    print(data['acc_id'][0])  # 取第一个账号
+    print(data['acc_id'].values.tolist())  # 转为 list
+else:
+    print('get_acc_list error: ', data)
+
+ret2, data2 = trd_ctx.place_order(
+    price=0.97,   
+    acc_id=14806998,
+    qty=3,
+    code="US.TSLA250530C342500",
+    order_type=OrderType.MARKET,
+    trd_side=TrdSide.BUY,
+    trd_env=FUTU_ENV,
+    session=Session.RTH
+)
+if ret2 == RET_OK:
+    print(data2.to_dict('records'))
+    # print(data2.values.tolist())
+else:
+    print('error:', data2)
+trd_ctx.close()
