@@ -138,38 +138,42 @@ if ret1 == RET_OK:
     print('Strike date:' + date)
     ret2, data2 = quote_ctx.get_option_chain(code=code, start=date, end=date)
     if ret2 == RET_OK:
+        print(data2)
         print(data2.to_dict('records'))
-        arr = data2['name'].values.tolist()
+        arr = data2.to_dict('records')
 
-        price_tolerance = 5.0  # How far from target price to consider
-        max_options_per_type = 6  # Max options to show per call/put
+        price_tolerance = 5  # How far from target price to consider
+        max_options_per_type = 2  # Max options to show per call/put
 
         # Initialize collections
         calls = []
         puts = []
 
-        for code in arr:
-            parts = code.split(' ')
-            option_type = parts[2][-1]  # 'C' or 'P'
-            price = float(parts[2][:-1])  # Convert price to float
+        for option in arr:
+            # parts = code.split(' ')
+            code = option['code']
+            option_type = option['option_type']
+            strike_price = float(option['strike_price'])  # Convert price to float
 
-            # Check if price is within tolerance (including target price)
-            if abs(price - target_price) <= price_tolerance:
-                if option_type == 'C':
-                    calls.append((abs(price - target_price), code))  # (distance, code)
-                else:
-                    puts.append((abs(price - target_price), code))
+            # Check if strike price is within tolerance
+            # if abs(strike_price - target_price) <= price_tolerance:
+            # For CALLS: Only include strikes ABOVE target_price
+            if option_type == Direction.Call.value and strike_price > target_price:
+                calls.append(code)  # (strike_price, code)
+            # For PUTS: Only include strikes BELOW target_price
+            elif option_type == Direction.Put.value and strike_price < target_price:
+                puts.append(code)
 
         # Sort by proximity to target price and limit results
         calls = sorted(calls, key=lambda x: x[0])[:max_options_per_type]
+        puts.reverse()
         puts = sorted(puts, key=lambda x: x[0])[:max_options_per_type]
-
+        print(calls)
+        print(puts)
+        # calls = [for code in calls]
+        # puts = [for code in puts]
         # Combine and extract just the codes
         results = [item[1] for item in calls + puts]
-
-        print("Options near target price:")
-        for option in results:
-            print(convert_option_format(option))
 
         # print(data2['code'][0])  # 取第一条的股票代码
         # print(data2['code'].values.tolist())  # 转为 list
@@ -188,7 +192,8 @@ else:
     print('error:', data1)
 quote_ctx.close()  # 结束后记得关闭当条连接，防止连接条数用尽
 
-trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.US, host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT, security_firm=SecurityFirm.FUTUINC)
+trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.US, host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT)
+# trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.HK, host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT, security_firm=SecurityFirm.FUTUSECURITIES)
 
 ret, data = trd_ctx.get_acc_list()
 if ret == RET_OK:
@@ -198,19 +203,20 @@ if ret == RET_OK:
 else:
     print('get_acc_list error: ', data)
 
-ret2, data2 = trd_ctx.place_order(
-    price=0.97,   
-    acc_id=14806998,
-    qty=3,
-    code="US.TSLA250530C342500",
-    order_type=OrderType.MARKET,
-    trd_side=TrdSide.BUY,
-    trd_env=FUTU_ENV,
-    session=Session.RTH
-)
-if ret2 == RET_OK:
-    print(data2.to_dict('records'))
-    # print(data2.values.tolist())
-else:
-    print('error:', data2)
+# ret2, data2 = trd_ctx.place_order(
+#     price=0.97,   
+#     acc_id=14806997,
+#     qty=3,
+#     # HK.TCH250529C460000
+#     code="HK.TCH250529C460000",
+#     order_type=OrderType.MARKET,
+#     trd_side=TrdSide.BUY,
+#     trd_env=FUTU_ENV,
+#     session=Session.RTH
+# )
+# if ret2 == RET_OK:
+#     print(data2.to_dict('records'))
+#     # print(data2.values.tolist())
+# else:
+#     print('error:', data2)
 trd_ctx.close()

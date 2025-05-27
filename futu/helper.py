@@ -32,5 +32,5 @@ def convert_option_format(option_code):
     strike_padded = f"{strike_in_thousands:06d}"  # Pad to 6 digits
 
     # Construct the new format
-    converted_code = f"US.{ticker}{expiry}{option_type}{strike_padded}"
+    converted_code = f"{ticker}{expiry}{option_type}{strike_padded}"
     return converted_code
