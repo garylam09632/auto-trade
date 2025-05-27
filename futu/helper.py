@@ -12,8 +12,8 @@ def get_trd_market(currency):
     return TrdMarket.HK
 
 def get_security_firm(currency):
-    if currency.upper() == 'USD':
-        return SecurityFirm.FUTUINC
+    # if currency.upper() == 'USD':
+    #     return SecurityFirm.FUTUIN
     return SecurityFirm.FUTUSECURITIES
 
 def convert_option_format(option_code):

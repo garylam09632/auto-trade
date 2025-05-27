@@ -239,6 +239,8 @@ def place_option_order(symbol, price, currency, action, direction):
 
 
 def close_option_position(symbol, currency, direction):
+    market_code = get_market_code(currency)
+    code = f"{market_code}{symbol}"
     trd_market = get_trd_market(currency)
     security_firm = get_security_firm(currency)
 
@@ -267,8 +269,15 @@ def close_option_position(symbol, currency, direction):
     else:
         return jsonify({"success": False, "message": "Query position error"})
 
+    option_positions = distinguish_shares_and_options(option_positions, code)['options']
     if len(option_positions) == 0:
         return jsonify({"success": False, "message": "No option positions"})
+
+    option_positions = separate_calls_puts(option_positions)
+    if direction == Direction.Call.value:
+        option_positions = option_positions['calls']
+    else:
+        option_positions = option_positions['puts']
 
     for position in option_positions:
         code = position['code']
@@ -352,3 +361,72 @@ def get_target_option_code(code, price):
         print('error:', data1)
     quote_ctx.close()  # 结束后记得关闭当条连接，防止连接条数用尽
     return None
+
+def distinguish_shares_and_options(positions, code=None):
+    """
+    Distinguish between shares and options in a list of positions, optionally filtering by underlying stock code.
+    
+    Args:
+        positions (list): List of position dictionaries
+        code (str, optional): Underlying stock code to filter options by (e.g., "US.TSLA"). 
+                             If None, returns all options.
+        
+    Returns:
+        dict: Dictionary with 'shares' and 'options' keys containing separated positions
+    """
+    shares = []
+    options = []
+    
+    for position in positions:
+        # Check if it's an option position
+        is_option = ('C' in position['code'] or 'P' in position['code'] or 
+                    'call' in position['stock_name'].lower() or 
+                    'put' in position['stock_name'].lower())
+        
+        if is_option:
+            # If a specific code is provided, check if the option belongs to that underlying
+            if code is None or position['code'].startswith(code):
+                options.append(position)
+        else:
+            shares.append(position)
+    
+    return {
+        'shares': shares,
+        'options': options
+    }
+
+def separate_calls_puts(options):
+    """
+    Separate options into calls and puts based on their codes and names.
+    
+    Args:
+        options (list): List of option position dictionaries
+        
+    Returns:
+        dict: Dictionary with 'calls' and 'puts' keys containing separated options
+    """
+    calls = []
+    puts = []
+    
+    for option in options:
+        # Check if it's a call (either 'C' in code or 'call' in name)
+        is_call = ('C' in option['code'] or 
+                 'call' in option['stock_name'].lower())
+        
+        # Check if it's a put (either 'P' in code or 'put' in name)
+        is_put = ('P' in option['code'] or 
+                'put' in option['stock_name'].lower())
+        
+        if is_call and not is_put:
+            calls.append(option)
+        elif is_put and not is_call:
+            puts.append(option)
+        else:
+            # Handle ambiguous cases (shouldn't happen with standard option codes)
+            # You might want to log these cases
+            pass
+    
+    return {
+        'calls': calls,
+        'puts': puts
+    }
