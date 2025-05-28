@@ -1,0 +1,324 @@
+[
+    {
+        "id": "c9fc2f3e7bf5b6dc",
+        "type": "tab",
+        "label": "web socket",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "3239cb93680a00b1",
+        "type": "websocket-listener",
+        "path": "wss://chatgpt.oyuimiruku.com/ws/test",
+        "wholemsg": "false"
+    },
+    {
+        "id": "f294b90c4322640f",
+        "type": "websocket in",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "",
+        "server": "3239cb93680a00b1",
+        "client": "",
+        "x": 480,
+        "y": 320,
+        "wires": [
+            [
+                "5e9940974d094b12"
+            ]
+        ]
+    },
+    {
+        "id": "5e9940974d094b12",
+        "type": "json",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 750,
+        "y": 320,
+        "wires": [
+            [
+                "9ec8be9016f25952"
+            ]
+        ]
+    },
+    {
+        "id": "adbae0f592eac34f",
+        "type": "http request",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "futu place order",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1300,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9ec8be9016f25952",
+        "type": "switch",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "",
+        "property": "payload.action",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "BUY",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SELL",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 910,
+        "y": 320,
+        "wires": [
+            [
+                "416a1714c6e601f4"
+            ],
+            [
+                "1169a0422b722081"
+            ]
+        ]
+    },
+    {
+        "id": "416a1714c6e601f4",
+        "type": "function",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "config",
+        "func": "const endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/place-order`;\nmsg.method = 'POST';\nnode.warn(msg.url)\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 160,
+        "wires": [
+            [
+                "adbae0f592eac34f"
+            ]
+        ]
+    },
+    {
+        "id": "8e1d6f92e944577f",
+        "type": "http request",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "IB place order",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1300,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ba02ac7f0732d96a",
+        "type": "http request",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "IB paper trade place order",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1330,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "35ffc88c7e717eef",
+        "type": "http request",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "futu close position",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1310,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1169a0422b722081",
+        "type": "function",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "config",
+        "func": "node.warn(msg.payload)\nconst endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/close-position`;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 380,
+        "wires": [
+            [
+                "35ffc88c7e717eef"
+            ]
+        ]
+    },
+    {
+        "id": "afbcefa01d68f2cd",
+        "type": "http request",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "IB close position",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1300,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b2e6fb4e5245587c",
+        "type": "http request",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "IB paper trade close position",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1340,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3b868a9f8d365ce2",
+        "type": "function",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "config",
+        "func": "const endpoint = global.get(\"ibApiEndpoint\");\nmsg.url = `${endpoint}/place-order`; // modify\nmsg.method = 'POST';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5afaaa4586a83ff5",
+        "type": "function",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "config",
+        "func": "const endpoint = global.get(\"ibPaperTradeApiEndpoint\");\nmsg.url = `${endpoint}/place-order`; // modify\nmsg.method = 'POST';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e31b76c694caa3c0",
+        "type": "function",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "config",
+        "func": "const endpoint = global.get(\"ibApiEndpoint\");\nmsg.url = `${endpoint}/place-order`; // modify\nmsg.method = 'POST';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "661bd9fb892cbe4e",
+        "type": "function",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "config",
+        "func": "const endpoint = global.get(\"ibPaperTradeApiEndpoint\");\nmsg.url = `${endpoint}/place-order`; // modify\nmsg.method = 'POST';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    }
+]

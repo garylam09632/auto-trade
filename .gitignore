@@ -9,3 +9,7 @@
 
 .idea/*
 __pycache__/*
+
+/server/node_modules
+/server/lib
+/server/.*

@@ -61,6 +61,13 @@ def place_shares_order(symbol, price, currency, action):
         "trd_env": FUTU_ENV,
         "session": Session.RTH
     })
+    if FUTU_ENV == TrdEnv.REAL:
+        ret, data = trd_ctx.unlock_trade(FUTU_TRADE_PWD)
+        if ret == RET_OK:
+            print("Unlocked")
+        else:
+            print('unlock_trade error: ', data)
+            return jsonify({"success": False, "message": "Unlock trade failed"})
     ret2, data2 = trd_ctx.place_order(
         price=price,
         qty=shares_qty,
@@ -114,6 +121,13 @@ def close_shares_position(symbol, currency):
             "trd_env": FUTU_ENV,
             "session": Session.RTH
         })
+        if FUTU_ENV == TrdEnv.REAL:
+            ret, data = trd_ctx.unlock_trade(FUTU_TRADE_PWD)
+            if ret == RET_OK:
+                print("Unlocked")
+            else:
+                print('unlock_trade error: ', data)
+                return jsonify({"success": False, "message": "Unlock trade failed"})
         ret, data = trd_ctx.place_order(
             price=1,
             qty=target_order['qty'],
@@ -220,6 +234,13 @@ def place_option_order(symbol, price, currency, action, direction):
         "trd_env": FUTU_ENV,
         "session": Session.RTH
     })
+    if FUTU_ENV == TrdEnv.REAL:
+        ret, data = trd_ctx.unlock_trade(FUTU_TRADE_PWD)
+        if ret == RET_OK:
+            print("Unlocked")
+        else:
+            print('unlock_trade error: ', data)
+            return jsonify({"success": False, "message": "Unlock trade failed"})
     ret2, data2 = trd_ctx.place_order(
         acc_id=acc_id,
         price=price,
@@ -279,6 +300,15 @@ def close_option_position(symbol, currency, direction):
     else:
         option_positions = option_positions['puts']
 
+
+    if FUTU_ENV == TrdEnv.REAL:
+        ret, data = trd_ctx.unlock_trade(FUTU_TRADE_PWD)
+        if ret == RET_OK:
+            print("Unlocked")
+        else:
+            print('unlock_trade error: ', data)
+            return jsonify({"success": False, "message": "Unlock trade failed"})
+
     for position in option_positions:
         code = position['code']
         qty = position['qty']
@@ -316,9 +346,24 @@ def get_target_option_code(code, price):
     ret1, data1 = quote_ctx.get_option_expiration_date(code=code)
 
     if ret1 == RET_OK:
-        date = data1['strike_time'].values.tolist()[0]  # Get the first strike date
-        print('Strike date:' + date)
-        ret2, data2 = quote_ctx.get_option_chain(code=code, start=date, end=date)
+        strike_dates = data1['strike_time'].values.tolist()
+        today = datetime.now().strftime('%Y-%m-%d')
+
+        # Find the first strike date that's not today
+        selected_date = None
+        for date in strike_dates:
+            if date != today:
+                selected_date = date
+                break
+
+        if not selected_date:
+            print("No future strike dates available")
+            quote_ctx.close()
+            return None
+
+        print('Selected strike date:', selected_date)
+
+        ret2, data2 = quote_ctx.get_option_chain(code=code, start=selected_date, end=selected_date)
         if ret2 == RET_OK:
             arr = data2.to_dict('records')
 
@@ -336,13 +381,13 @@ def get_target_option_code(code, price):
                 # if abs(strike_price - target_price) <= OPTION_PRICE_TOLERANCE:
                 # For CALLS: Only include strikes ABOVE target_price
                 if option_type == Direction.Call.value and strike_price > price:
-                    print(f"Call code:{code}")
-                    print(f"strike_price:{strike_price}")
+                    # print(f"Call code:{code}")
+                    # print(f"strike_price:{strike_price}")
                     calls.append(code)  # (strike_price, code)
                 # For PUTS: Only include strikes BELOW target_price
                 elif option_type == Direction.Put.value and strike_price < price:
-                    print(f"Put code:{code}")
-                    print(f"strike_price:{strike_price}")
+                    # print(f"Put code:{code}")
+                    # print(f"strike_price:{strike_price}")
                     puts.append(code)
 
             # Sort by proximity to target price and limit results

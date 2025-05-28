@@ -64,7 +64,7 @@ code = 'US.TSLA'
 
 # Get position list
 trd_ctx = OpenSecTradeContext(filter_trdmarket=TrdMarket.US, host='127.0.0.1', port=11111, security_firm=SecurityFirm.FUTUSECURITIES)
-ret, data = trd_ctx.position_list_query(trd_env=TrdEnv.REAL)
+ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV)
 if ret == RET_OK:
     orders = data.to_dict('records')
     print(orders)
