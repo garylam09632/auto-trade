@@ -265,6 +265,7 @@ def close_option_position(symbol, currency, direction):
     trd_market = get_trd_market(currency)
     security_firm = get_security_firm(currency)
 
+    # Get account speific for option trading
     acc_id = 0
     get_acc_ctx = OpenSecTradeContext(filter_trdmarket=trd_market, host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT)
     get_acc_ret, get_acc_data = get_acc_ctx.get_acc_list()
@@ -280,6 +281,7 @@ def close_option_position(symbol, currency, direction):
     else:
         print('get_acc_list error: ', get_acc_data)
 
+    # Get all option positions
     option_positions = []
     trd_ctx = OpenSecTradeContext(filter_trdmarket=trd_market, host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT,
                                   security_firm=security_firm)
@@ -290,17 +292,21 @@ def close_option_position(symbol, currency, direction):
     else:
         return jsonify({"success": False, "message": "Query position error"})
 
+    # Separate with shares and options with the desire code/symbol
     option_positions = distinguish_shares_and_options(option_positions, code)['options']
     if len(option_positions) == 0:
         return jsonify({"success": False, "message": "No option positions"})
 
+    # Separate with calls and puts
     option_positions = separate_calls_puts(option_positions)
+
+    # If the closing direction is call, only close call positions, else close put positions
     if direction == Direction.Call.value:
         option_positions = option_positions['calls']
     else:
         option_positions = option_positions['puts']
 
-
+    # Unlock trade authority
     if FUTU_ENV == TrdEnv.REAL:
         ret, data = trd_ctx.unlock_trade(FUTU_TRADE_PWD)
         if ret == RET_OK:
