@@ -3,6 +3,7 @@ from config import *
 from helper import *
 from type import *
 from flask import Flask, jsonify, request
+from datetime import datetime
 
 def place_shares_order(symbol, price, currency, action):
     market_code = get_market_code(currency)
@@ -387,28 +388,39 @@ def close_option_position(symbol, currency, direction):
 
     return jsonify({"success": True, "option_positions": option_positions})
 
-
 def get_target_option_code(code, price):
     quote_ctx = OpenQuoteContext(host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT)
     ret1, data1 = quote_ctx.get_option_expiration_date(code=code)
 
     if ret1 == RET_OK:
-        strike_dates = data1['strike_time'].values.tolist()
-        today = datetime.now().strftime('%Y-%m-%d')
-
-        # Find the first strike date that's not today
-        selected_date = None
-        for date in strike_dates:
-            if date != today:
-                selected_date = date
-                break
-
-        if not selected_date:
+        strike_dates = sorted(data1['strike_time'].values.tolist())
+        today = datetime.now()
+        
+        # Determine if today is Thursday or Friday (0=Monday, 1=Tuesday, ..., 4=Friday)
+        day_of_week = today.weekday()
+        is_thurs_or_fri = day_of_week >= 3  # 3=Thursday, 4=Friday
+        
+        # Filter out past dates and today's date
+        current_date_str = today.strftime('%Y-%m-%d')
+        future_dates = [date for date in strike_dates if date > current_date_str]
+        
+        if not future_dates:
             print("No future strike dates available")
             quote_ctx.close()
             return None
+            
+        # Select date based on day of week
+        if is_thurs_or_fri:
+            # Thursday/Friday - select the next expiration date (skip nearest)
+            if len(future_dates) > 1:
+                selected_date = future_dates[1]  # Second future date
+            else:
+                selected_date = future_dates[0]  # Fallback if only one future date
+        else:
+            # Monday-Wednesday - select the nearest expiration date
+            selected_date = future_dates[0]
 
-        print('Selected strike date:', selected_date)
+        print(f'Selected strike date ({today.strftime("%A")}):', selected_date)
 
         ret2, data2 = quote_ctx.get_option_chain(code=code, start=selected_date, end=selected_date)
         if ret2 == RET_OK:
@@ -419,22 +431,15 @@ def get_target_option_code(code, price):
             puts = []
 
             for option in arr:
-                # parts = code.split(' ')
                 code = option['code']
                 option_type = option['option_type']
-                strike_price = float(option['strike_price'])  # Convert price to float
+                strike_price = float(option['strike_price'])
 
-                # Check if strike price is within tolerance
-                # if abs(strike_price - target_price) <= OPTION_PRICE_TOLERANCE:
                 # For CALLS: Only include strikes ABOVE target_price
                 if option_type == Direction.Call.value and strike_price > price:
-                    # print(f"Call code:{code}")
-                    # print(f"strike_price:{strike_price}")
-                    calls.append(code)  # (strike_price, code)
+                    calls.append(code)
                 # For PUTS: Only include strikes BELOW target_price
                 elif option_type == Direction.Put.value and strike_price < price:
-                    # print(f"Put code:{code}")
-                    # print(f"strike_price:{strike_price}")
                     puts.append(code)
 
             # Sort by proximity to target price and limit results
@@ -443,15 +448,14 @@ def get_target_option_code(code, price):
             puts = sorted(puts, key=lambda x: x[0])[:OPTION_MAX_PER_TYPE]
             print(f"Available Calls: {calls}")
             print(f"Available Puts: {puts}")
-            # print(data2['code'][0])  #  print(data2['code'].values.tolist())  # 转为 list取第一条的股票代码
-            #             #
-            quote_ctx.close()  # 结束后记得关闭当条连接，防止连接条数用尽
+            
+            quote_ctx.close()
             return {"calls": calls, "puts": puts}
         else:
             print('error:', data2)
     else:
         print('error:', data1)
-    quote_ctx.close()  # 结束后记得关闭当条连接，防止连接条数用尽
+    quote_ctx.close()
     return None
 
 def distinguish_shares_and_options(positions, code=None):
