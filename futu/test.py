@@ -1,21 +1,39 @@
 import time
 from futu import *
+from util import *
 
-class StockQuoteTest(StockQuoteHandlerBase):
-    def on_recv_rsp(self, rsp_pb):
-        ret_code, data = super(StockQuoteTest,self).on_recv_rsp(rsp_pb)
-        if ret_code != RET_OK:
-            print("StockQuoteTest: error, msg: %s" % data)
-            return RET_ERROR, data
-        print("StockQuoteTest ", data) # StockQuoteTest 自己的处理逻辑
-        return RET_OK, data
-quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11112)
-handler = StockQuoteTest()
-quote_ctx.set_handler(handler)  # 设置实时报价回调
-ret, data = quote_ctx.subscribe(['US.AAPL'], [SubType.QUOTE])  # 订阅实时报价类型，OpenD 开始持续收到服务器的推送
-if ret == RET_OK:
-    print(data)
+direction = Direction.Put.value
+
+option_positions = [
+  {"code": "US.TSLA250530P360000", "stock_name": "TSLA"},
+  {"code": "US.TSLA250530P355000", "stock_name": "TSLA"},
+  {"code": "US.TSLA250530P352500", "stock_name": "TSLA"},
+  {"code": "US.TSLA250530C370000", "stock_name": "TSLA"},
+  {"code": "US.TSLA250530C367500", "stock_name": "TSLA"},
+  {"code": "US.TSLA250530C365000", "stock_name": "TSLA"},
+  {"code": "US.TSLA", "stock_name": "TSLA"},
+  {"code": "US.NVDA250530C138000", "stock_name": "NVDA"},
+  {"code": "US.CRWV250530P120000", "stock_name": "CRWV"},
+  {"code": "US.CRWV250530P118000", "stock_name": "CRWV"},
+  {"code": "US.CRWV250530P116000", "stock_name": "CRWV"},
+  {"code": "US.CRWV250530P115000", "stock_name": "CRWV"},
+  {"code": "US.CRWV250530C120000", "stock_name": "CRWV"},
+  {"code": "US.CRWV250530C118000", "stock_name": "CRWV"},
+  {"code": "US.CRWV250530C117000", "stock_name": "CRWV"}
+]
+
+option_positions = distinguish_shares_and_options(option_positions, 'US.TSLA')['options']
+if len(option_positions) == 0:
+    print({"success": False, "message": "No option positions"})
+
+# Separate with calls and puts
+option_positions = separate_calls_puts(option_positions)
+
+# If the closing direction is call, only close call positions, else close put positions
+if direction == Direction.Call.value:
+    option_positions = option_positions['calls']
 else:
-    print('error:', data)
-time.sleep(15)  #  设置脚本接收 OpenD 的推送持续时间为15秒
-quote_ctx.close()   # 关闭当条连接，OpenD 会在1分钟后自动取消相应股票相应类型的订阅  
+    option_positions = option_positions['puts']
+
+for position in option_positions:
+    print(position)

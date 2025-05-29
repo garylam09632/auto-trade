@@ -64,7 +64,7 @@ def place_shares_order(symbol, price, currency, action):
     if FUTU_ENV == TrdEnv.REAL:
         ret, data = trd_ctx.unlock_trade(FUTU_TRADE_PWD)
         if ret == RET_OK:
-            print("Unlocked")
+            print("Unlocked trade authority")
         else:
             print('unlock_trade error: ', data)
             return jsonify({"success": False, "message": "Unlock trade failed"})
@@ -150,12 +150,20 @@ def close_shares_position(symbol, currency):
 
 
 def place_option_order(symbol, price, currency, action, direction):
-    market_code = get_market_code(currency)
-    code = f"{market_code}{symbol}"
+    market_code = f"{get_market_code(currency)}{symbol}"
+    code = market_code
     trd_market = get_trd_market(currency)
     security_firm = get_security_firm(currency)
-    print(f"code: {code}")
+
+    print("========================== Place option order ==========================")
+    print(f"Params")
+    print(f"Market code = {market_code}")
+    print(f"Price = {price}")
+    print(f"Direction = {direction}")
+
     options = get_target_option_code(code, price)
+
+
     if not options or "calls" not in options or "puts" not in options:
         return False  # Early exit if invalid structure
 
@@ -169,11 +177,10 @@ def place_option_order(symbol, price, currency, action, direction):
 
     # Assume direction value must be valid
     if direction == Direction.Call.value:
-        print('CALL')
         code = target_call
     else:
-        print('PUT')
         code = target_put
+    print(f"Option code = {code}")
 
     # Get option account
     acc_id = 0
@@ -207,13 +214,38 @@ def place_option_order(symbol, price, currency, action, direction):
     if available_assets < 0:
         return jsonify({"success": False, "message": "Account total assets is 0"})
 
-    # Get positions
-    ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, acc_id=acc_id)
-    if ret == RET_OK:
-        print(data.to_dict('records'))
-    else:
-        print('accinfo_query error: ', data)
-        return jsonify({"success": False, "message": "Query position error"})
+    if not ALLOW_MULTIPLE_ORDER_PER_DIRECTION:
+        print("Not allow multiple orders per direction")
+        # Get positions
+        option_positions = []
+        ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, acc_id=acc_id)
+        if ret == RET_OK:
+            option_positions = data.to_dict('records')
+        else:
+            return jsonify({"success": False, "message": "Query position error"})
+
+        # Separate with shares and options with the desire code/symbol
+        option_positions = distinguish_shares_and_options(option_positions, market_code)['options']
+        if len(option_positions) == 0:
+            return jsonify({"success": False, "message": "No option positions"})
+
+        # Separate with calls and puts
+        option_positions = separate_calls_puts(option_positions)
+
+        # If the closing direction is call, only close call positions, else close put positions
+        if direction == Direction.Call.value:
+            option_positions = option_positions['calls']
+        else:
+            option_positions = option_positions['puts']
+
+        has_order = False
+        for position in option_positions:
+            if position['qty'] > 0:
+                has_order = True
+
+        if has_order:
+            return jsonify({"success": False, "message": f"Already has {direction} positions"})
+
 
     # allow_assets = total_assets * SHARES_ORDER_PERCENTAGE_PER_STOCK
     # # If the assets amount after deducting the stock which in position is less than the allowed assets, use all of the available assets
@@ -223,7 +255,7 @@ def place_option_order(symbol, price, currency, action, direction):
     # print(f"allow_assets {allow_assets}")
     # print(f"price {price}")
     # shares_qty = allow_assets / price # Shares qty available for long and short (estimate qty only since the price is from request body instead of real-time quote)
-    shares_qty = 1
+    shares_qty = OPTION_QTY_PER_ORDER
 
     print({
         "price": price,
@@ -265,6 +297,11 @@ def close_option_position(symbol, currency, direction):
     trd_market = get_trd_market(currency)
     security_firm = get_security_firm(currency)
 
+    print("========================== Close option position ==========================")
+    print(f"Params:")
+    print(f"Market code = {market_code}")
+    print(f"Direction = {direction}")
+
     # Get account speific for option trading
     acc_id = 0
     get_acc_ctx = OpenSecTradeContext(filter_trdmarket=trd_market, host=FUTU_OPEN_D_HOST, port=FUTU_OPEN_D_PORT)
@@ -288,7 +325,6 @@ def close_option_position(symbol, currency, direction):
     ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, acc_id=acc_id)
     if ret == RET_OK:
         option_positions = data.to_dict('records')
-        print(option_positions)
     else:
         return jsonify({"success": False, "message": "Query position error"})
 
@@ -300,17 +336,20 @@ def close_option_position(symbol, currency, direction):
     # Separate with calls and puts
     option_positions = separate_calls_puts(option_positions)
 
+
     # If the closing direction is call, only close call positions, else close put positions
     if direction == Direction.Call.value:
         option_positions = option_positions['calls']
     else:
         option_positions = option_positions['puts']
 
+    print(f"All {direction} positions = {[option["code"] for option in option_positions]}")
+
     # Unlock trade authority
     if FUTU_ENV == TrdEnv.REAL:
         ret, data = trd_ctx.unlock_trade(FUTU_TRADE_PWD)
         if ret == RET_OK:
-            print("Unlocked")
+            print("Unlocked trade authority")
         else:
             print('unlock_trade error: ', data)
             return jsonify({"success": False, "message": "Unlock trade failed"})
@@ -342,7 +381,6 @@ def close_option_position(symbol, currency, direction):
         else:
             print('close option position fail')
             print(data)
-            return jsonify({"success": False, "message": "Close position failed"})
 
     return jsonify({"success": True, "option_positions": option_positions})
 
@@ -400,8 +438,8 @@ def get_target_option_code(code, price):
             calls = sorted(calls, key=lambda x: x[0])[:OPTION_MAX_PER_TYPE]
             puts.reverse()
             puts = sorted(puts, key=lambda x: x[0])[:OPTION_MAX_PER_TYPE]
-            print(calls)
-            print(puts)
+            print(f"Available Calls: {calls}")
+            print(f"Available Puts: {puts}")
             # print(data2['code'][0])  #  print(data2['code'].values.tolist())  # 转为 list取第一条的股票代码
             #             #
             quote_ctx.close()  # 结束后记得关闭当条连接，防止连接条数用尽
@@ -427,16 +465,17 @@ def distinguish_shares_and_options(positions, code=None):
     """
     shares = []
     options = []
-    
     for position in positions:
         # Check if it's an option position
         is_option = ('C' in position['code'] or 'P' in position['code'] or 
                     'call' in position['stock_name'].lower() or 
                     'put' in position['stock_name'].lower())
-        
+
         if is_option:
             # If a specific code is provided, check if the option belongs to that underlying
+            # print(f"check position: {position['code']}, code {code}, code is None {code is None}, position start with code {position['code'].startswith(code)}")
             if code is None or position['code'].startswith(code):
+                # print(f"add position: {position['code']}")
                 options.append(position)
         else:
             shares.append(position)

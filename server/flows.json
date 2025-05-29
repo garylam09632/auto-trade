@@ -20,7 +20,7 @@
         "name": "",
         "server": "3239cb93680a00b1",
         "client": "",
-        "x": 480,
+        "x": 380,
         "y": 320,
         "wires": [
             [
@@ -36,7 +36,7 @@
         "property": "payload",
         "action": "",
         "pretty": false,
-        "x": 750,
+        "x": 650,
         "y": 320,
         "wires": [
             [
@@ -60,8 +60,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1300,
-        "y": 160,
+        "x": 1380,
+        "y": 180,
         "wires": [
             []
         ]
@@ -88,7 +88,7 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 910,
+        "x": 810,
         "y": 320,
         "wires": [
             [
@@ -104,15 +104,15 @@
         "type": "function",
         "z": "c9fc2f3e7bf5b6dc",
         "name": "config",
-        "func": "const endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/place-order`;\nmsg.method = 'POST';\nnode.warn(msg.url)\nreturn msg;",
+        "func": "const endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/place-order`;\nmsg.method = 'POST';\nnode.warn(msg.url)\nnode.warn(msg.payload)\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1110,
-        "y": 160,
+        "x": 1190,
+        "y": 180,
         "wires": [
             [
                 "adbae0f592eac34f"
@@ -135,8 +135,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1300,
-        "y": 220,
+        "x": 1380,
+        "y": 240,
         "wires": [
             []
         ]
@@ -157,8 +157,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1330,
-        "y": 280,
+        "x": 1410,
+        "y": 300,
         "wires": [
             []
         ]
@@ -179,8 +179,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1310,
-        "y": 380,
+        "x": 1390,
+        "y": 400,
         "wires": [
             []
         ]
@@ -197,8 +197,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1110,
-        "y": 380,
+        "x": 1190,
+        "y": 400,
         "wires": [
             [
                 "35ffc88c7e717eef"
@@ -221,8 +221,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1300,
-        "y": 440,
+        "x": 1380,
+        "y": 460,
         "wires": [
             []
         ]
@@ -243,8 +243,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1340,
-        "y": 500,
+        "x": 1420,
+        "y": 520,
         "wires": [
             []
         ]
@@ -261,8 +261,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1110,
-        "y": 220,
+        "x": 1190,
+        "y": 240,
         "wires": [
             []
         ]
@@ -279,8 +279,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1110,
-        "y": 280,
+        "x": 1190,
+        "y": 300,
         "wires": [
             []
         ]
@@ -297,8 +297,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1110,
-        "y": 440,
+        "x": 1190,
+        "y": 460,
         "wires": [
             []
         ]
@@ -315,10 +315,123 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1110,
-        "y": 500,
+        "x": 1190,
+        "y": 520,
         "wires": [
             []
+        ]
+    },
+    {
+        "id": "e75127d8d5e87642",
+        "type": "function",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "close CRWV",
+        "func": "msg.payload = {\n    code: \"CRWV\",\n    type: \"OPTION\",\n    action: \"SELL\",\n    direction: \"PUT\"\n}\nconst endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/close-position`;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 600,
+        "wires": [
+            [
+                "051e911b15f03dd3"
+            ]
+        ]
+    },
+    {
+        "id": "051e911b15f03dd3",
+        "type": "http request",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "futu close position",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 790,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "eb4d833eab32233d",
+        "type": "function",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "close TSLA",
+        "func": "msg.payload = {\n    code: \"TSLA\",\n    type: \"OPTION\",\n    action: \"SELL\",\n    direction: \"PUT\"\n}\nconst endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/close-position`;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 680,
+        "wires": [
+            [
+                "eecb04b7d864db7f"
+            ]
+        ]
+    },
+    {
+        "id": "eecb04b7d864db7f",
+        "type": "http request",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "futu close position",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 790,
+        "y": 680,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3f88d03fb9f5d856",
+        "type": "inject",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 300,
+        "y": 640,
+        "wires": [
+            [
+                "e75127d8d5e87642"
+            ]
         ]
     }
 ]
