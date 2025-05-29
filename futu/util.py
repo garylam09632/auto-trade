@@ -299,7 +299,7 @@ def close_option_position(symbol, currency, direction):
 
     print("========================== Close option position ==========================")
     print(f"Params:")
-    print(f"Market code = {market_code}")
+    print(f"Market code = {code}")
     print(f"Direction = {direction}")
 
     # Get account speific for option trading
@@ -325,17 +325,20 @@ def close_option_position(symbol, currency, direction):
     ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, acc_id=acc_id)
     if ret == RET_OK:
         option_positions = data.to_dict('records')
+        # print(f"All {direction} positions = {[option["code"] for option in option_positions]}")
     else:
         return jsonify({"success": False, "message": "Query position error"})
 
     # Separate with shares and options with the desire code/symbol
     option_positions = distinguish_shares_and_options(option_positions, code)['options']
+    # print(f"Distin {direction} positions = {[option["code"] for option in option_positions]}")
     if len(option_positions) == 0:
         return jsonify({"success": False, "message": "No option positions"})
 
     # Separate with calls and puts
     option_positions = separate_calls_puts(option_positions)
 
+    # print(f"Separate {direction} positions = {option_positions}")
 
     # If the closing direction is call, only close call positions, else close put positions
     if direction == Direction.Call.value:
@@ -499,14 +502,16 @@ def separate_calls_puts(options):
     puts = []
     
     for option in options:
+        # print(f"Separating {option}")
+        stock_name = option['stock_name'].split(' ')
+        direction = stock_name[2] # Last index will be {price}{direction} e.g. 120.00C
         # Check if it's a call (either 'C' in code or 'call' in name)
-        is_call = ('C' in option['code'] or 
-                 'call' in option['stock_name'].lower())
+        is_call = 'C' in direction
         
         # Check if it's a put (either 'P' in code or 'put' in name)
-        is_put = ('P' in option['code'] or 
-                'put' in option['stock_name'].lower())
-        
+        is_put = 'P' in direction
+
+        # print(f"is_call: {is_call}, is_put: {is_put}")
         if is_call and not is_put:
             calls.append(option)
         elif is_put and not is_call:

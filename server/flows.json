@@ -430,8 +430,51 @@
         "y": 640,
         "wires": [
             [
-                "e75127d8d5e87642"
+                "e75127d8d5e87642",
+                "eb4d833eab32233d"
             ]
+        ]
+    },
+    {
+        "id": "6439b2a84b95c543",
+        "type": "function",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "function 1",
+        "func": "msg.payload = {\n    code: \"TSLA\",\n}\nconst endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/test`;\nmsg.method = 'POST'\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 760,
+        "wires": [
+            [
+                "15769d9f21da53d9"
+            ]
+        ]
+    },
+    {
+        "id": "15769d9f21da53d9",
+        "type": "http request",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "futu close position",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 710,
+        "y": 760,
+        "wires": [
+            []
         ]
     }
 ]
