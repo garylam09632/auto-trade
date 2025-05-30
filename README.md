@@ -1,136 +1,136 @@
-# Auto-Trade
+# 自動交易系統
 
-An automated trading system that integrates with Futu OpenD API and TradingView alerts.
+一個集成富途OpenD API和TradingView警報的自動化交易系統。
 
-## Overview
+## 概述
 
-This project provides an automated trading solution that connects TradingView alerts with Futu trading platform, allowing for automated execution of trading strategies.
+該項目提供了一個自動化交易解決方案，連接TradingView警報與富途交易平台，實現交易策略的自動執行。
 
-## Prerequisites
+## 前提條件
 
-- [Futu OpenD](https://openapi.futunn.com/futu-api-doc/opend/opend-cmd.html)
+- [富途OpenD](https://openapi.futunn.com/futu-api-doc/opend/opend-cmd.html)
 - Python 3.6+
 - Node.js
 - Node-RED
 
-## Installation
+## 安裝
 
-### 1. Install Futu OpenD
+### 1. 安裝富途OpenD
 
-Follow the installation steps in [Futu OpenD documentation](https://openapi.futunn.com/futu-api-doc/opend/opend-cmd.html).
+按照[富途OpenD文檔](https://openapi.futunn.com/futu-api-doc/opend/opend-cmd.html)中的安裝步驟進行操作。
 
-### 2. Configure Futu OpenD
+### 2. 配置富途OpenD
 
-After installation, navigate to the installation directory and edit the `FutuOpenD.xml` file:
+安裝後，導航到安裝目錄並編輯`FutuOpenD.xml`文件：
 
 ```xml
-<futu_opend>
-    <!-- Basic parameters -->
-    <!-- Listening address. 127.0.0.1 by default -->
-    <ip>127.0.0.1</ip>
-    <!-- API interface protocol listening port -->
-    <api_port>11111</api_port>
-    <!-- Login account -->
-    <login_account>{{ Your Futu ID }}</login_account>
-    <!-- Login password, 32-bit MD5 encrypted hexadecimal --> 
-    <!-- <login_pwd_md5>6e55f158a827b1a1c4321a245aaaad88</login_pwd_md5> -->
-    <!-- Plain text of login password. When cypher text exists, the cypher text will be used. --> 
-    <login_pwd>{{ Your Password }}</login_pwd>
-    <!-- FutuOpenD language. en: English, chs: Simplified Chinese -->
-    <lang>en</lang> <!-- Use English to avoid encoding issues -->
+
+    
+    
+    127.0.0.1
+    
+    11111
+    
+    {{ 你的富途ID }}
+     
+    6e55f158a827b1a1c4321a245aaaad88 -->
+     
+    {{ 你的密碼 }}
+    
+    en 
 ```
 
-Only change the parts within `{{ }}`.
+只更改`{{ }}`內的部分。
 
-### 3. Install Python
+### 3. 安裝Python
 
-Follow the steps in [Futu API Python Environment Setup](https://openapi.futunn.com/futu-api-doc/quick/env.html):
+按照[富途API Python環境設置](https://openapi.futunn.com/futu-api-doc/quick/env.html)中的步驟操作：
 
-1. Start the Python installer, and tick the "Add python.exe to PATH" checkbox
-2. Keep the default options for the rest of the installation
-3. After installation, open a command prompt and run:
+1. 啟動Python安裝程序，勾選"Add python.exe to PATH"複選框
+2. 保持安裝過程中的默認選項
+3. 安裝完成後，打開命令提示符並運行：
    - Windows: `python -V`
    - Linux & Mac: `python3 -V`
-   - Also check pip with: `pip --version`
+   - 同時檢查pip: `pip --version`
 
-### 4. Install Required Python Libraries
+### 4. 安裝所需的Python庫
 
 ```bash
 pip install futu-api flask
 ```
 
-### 5. Install Node.js
+### 5. 安裝Node.js
 
-1. Download Node.js from [nodejs.org](https://nodejs.org/en)
-2. Follow all default installation steps
-3. After installation, open a command prompt and verify installation with:
+1. 從[nodejs.org](https://nodejs.org/en)下載Node.js
+2. 按照所有默認安裝步驟進行操作
+3. 安裝完成後，打開命令提示符並驗證安裝：
    ```bash
    node -v
    npm -v
    ```
 
-### 6. Install Node-RED
+### 6. 安裝Node-RED
 
-1. Install Node-RED globally:
+1. 全局安裝Node-RED：
    ```bash
-   # For Windows (run as Administrator)
+   # Windows（以管理員身份運行）
    npm install -g --unsafe-perm node-red
    
-   # For Linux/Mac
+   # Linux/Mac
    sudo npm install -g --unsafe-perm node-red
    ```
-2. Verify installation with:
+2. 驗證安裝：
    ```bash
    node-red --help
    ```
 
-## Starting the Program
+## 啟動程序
 
-1. Launch Futu OpenD by running `FutuOpenD.exe` to start the OpenD server
-2. Unzip the auto-trade project (if not already done)
-3. Configure Trading Environment:
+1. 運行`FutuOpenD.exe`啟動OpenD服務器
+2. 解壓auto-trade項目（如果尚未解壓）
+3. 配置交易環境：
 
-Before starting, edit futu/config.py to set:
+在啟動前，編輯futu/config.py設置：
 
 ```python
-# Trading password (required for real market orders)
-FUTU_TRADE_PWD = "your_trading_password"
+# 交易密碼（實盤交易必需）
+FUTU_TRADE_PWD = "你的交易密碼"
 
-# Trading environment (choose one)
-FUTU_ENV = TrdEnv.SIMULATE  # Paper trading environment
-# FUTU_ENV = TrdEnv.REAL     # Real trading environment
-Set FUTU_TRADE_PWD to your actual trading password
+# 交易環境（選擇一個）
+FUTU_ENV = TrdEnv.SIMULATE  # 模擬交易環境
+# FUTU_ENV = TrdEnv.REAL     # 實盤交易環境
+將FUTU_TRADE_PWD設置為你的實際交易密碼
 
-Choose between TrdEnv.SIMULATE (paper trading) or TrdEnv.REAL (live trading)
+選擇TrdEnv.SIMULATE（模擬交易）或TrdEnv.REAL（實盤交易）
 ```
 
-4. Run `startup.bat` to start the Python and Node-RED servers
-5. Access Node-RED at [http://localhost:5001](http://localhost:5001)
-   - You can customize your alerts by modifying the flow connections in Node-RED
+4. 運行`startup.bat`啟動Python和Node-RED服務器
+5. 訪問[http://localhost:5001](http://localhost:5001)進入Node-RED
+   - 你可以通過修改Node-RED中的流連接來自定義你想接收的警報
 
-## Important Configuration Notes
-__FUTU_TRADE_PWD__: This is different from your login password. It's the password you use to confirm trades in the Futu app.
+## 重要配置說明
+__FUTU_TRADE_PWD__：這與你的登錄密碼不同。它是你在富途應用中確認交易時使用的密碼。
 
-Trading Environment:
+交易環境：
 
-__TrdEnv.SIMULATE__: All orders are simulated (no real money involved)
+__TrdEnv.SIMULATE__：所有訂單都是模擬的（不涉及真實資金）
 
-__TrdEnv.REAL__: Orders will be executed with real money
+__TrdEnv.REAL__：訂單將使用真實資金執行
 
-Always test your strategies in simulation mode before switching to real trading.
+在切換到實盤交易前，始終在模擬模式下測試你的策略。
 
-## TradingView Integration
+## TradingView集成
 
-Configure TradingView alerts to send webhooks to your server endpoint. The format of the alert should match what your Node-RED flow expects.
+配置TradingView警報以發送webhook到你的服務器端點。警報格式應與你的Node-RED流程所期望的格式匹配。
 
-## Configuration
+## 配置
 
-You can modify the configuration settings in the `futu/config.py` file to adjust trading parameters.
+你可以修改`futu/config.py`文件中的配置設置來調整交易參數。
 
-## Q&A
+## 問答
 
-If you have any questions, please contact the developer.
+如有任何問題，請聯繫開發者。
 
-## License
+## 許可
 
-This project is proprietary software.
+該項目為專有軟件。
