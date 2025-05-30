@@ -432,23 +432,23 @@ def get_target_option_code(code, price):
         
         # Filter out past dates and today's date
         current_date_str = today.strftime('%Y-%m-%d')
-        future_dates = [date for date in strike_dates if date > current_date_str]
+        # future_dates = [date for date in strike_dates if date > current_date_str]
         
-        if not future_dates:
-            print("No future strike dates available")
-            quote_ctx.close()
-            return None
+        # if not future_dates:
+        #     print("No future strike dates available")
+        #     quote_ctx.close()
+        #     return None
             
         # Select date based on day of week
         if is_thurs_or_fri:
             # Thursday/Friday - select the next expiration date (skip nearest)
-            if len(future_dates) > 1:
-                selected_date = future_dates[1]  # Second future date
+            if len(strike_dates) > 1:
+                selected_date = strike_dates[1]  # Second future date
             else:
-                selected_date = future_dates[0]  # Fallback if only one future date
+                selected_date = strike_dates[0]  # Fallback if only one future date
         else:
             # Monday-Wednesday - select the nearest expiration date
-            selected_date = future_dates[0]
+            selected_date = strike_dates[0]
 
         print(f'Selected strike date ({today.strftime("%A")}):', selected_date)
 
