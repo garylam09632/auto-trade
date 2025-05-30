@@ -128,6 +128,55 @@ __TrdEnv.REAL__：訂單將使用真實資金執行
 
 你可以修改`futu/config.py`文件中的配置設置來調整交易參數。
 
+### 配置參數詳解
+
+以下是配置檔案中各參數的詳細說明：
+
+- **FUTU_OPEN_D_HOST** = '127.0.0.1'  
+  富途OpenD服務器的主機地址。默認為本地地址，如果OpenD運行在其他機器上，需要修改為對應IP。
+
+- **FUTU_OPEN_D_PORT** = 11111  
+  富途OpenD服務器的連接埠。需要與FutuOpenD.xml中設置的api_port一致。
+
+- **FUTU_TRADE_PWD** = '你的交易密碼'  
+  交易密碼，用於執行實盤交易時的驗證。這是你在富途APP中確認交易時使用的密碼，而非登錄密碼。
+
+- **FUTU_ENV** = TrdEnv.REAL / TrdEnv.SIMULATE  
+  交易環境設置。TrdEnv.SIMULATE為模擬交易環境（不使用真實資金），TrdEnv.REAL為實盤交易環境（使用真實資金）。
+
+- **DEFAULT_TRADING_CURRENCY** = "USD"  
+  默認交易貨幣。可設置為"USD"（美元）、"HKD"（港幣）等，取決於你交易的市場。
+
+- **SHARES_ORDER_PERCENTAGE_PER_STOCK** = 0.25  
+  每筆股票訂單的資金比例。例如，設置為0.25表示每筆訂單將使用賬戶可用資金的25%。
+
+- **OPTION_MAX_PER_TYPE** = 3  
+  每種期權類型（看漲/看跌）的最大數量限制。系統會根據目標價格選擇最接近的期權。
+
+- **OPTION_CALL_INDEX** = 2  
+  看漲期權的選擇索引。較小的值會選擇更接近目標價格的期權，較大的值會選擇更遠的期權。
+
+- **OPTION_PUT_INDEX** = 2  
+  看跌期權的選擇索引。較小的值會選擇更接近目標價格的期權，較大的值會選擇更遠的期權。
+
+- **OPTION_QTY_PER_ORDER** = 1  
+  每筆期權訂單的合約數量。
+
+- **ALLOW_MULTIPLE_ORDER_PER_DIRECTION** = False  
+  是否允許在同一方向（買入/賣出）下多個訂單。設置為False時，系統會檢查是否已有相同方向的未完成訂單。
+
+- **API_QUEUE_TIMEOUT** = 2  
+  API請求隊列的超時時間（秒）。如果系統在指定時間內無法處理請求，將返回超時錯誤。
+
+### 建議配置
+
+初次使用時，建議保持以下設置：
+1. 將FUTU_ENV設置為TrdEnv.SIMULATE進行模擬交易測試
+2. 保持較低的SHARES_ORDER_PERCENTAGE_PER_STOCK值（如0.1）以限制每筆訂單的資金使用
+3. 設置ALLOW_MULTIPLE_ORDER_PER_DIRECTION = False以避免重複下單
+
+在確認系統正常運行並熟悉操作後，再根據需要調整這些參數。
+
 ## 問答
 
 如有任何問題，請聯繫開發者。
