@@ -5,7 +5,7 @@ from type import *
 from flask import Flask, jsonify, request
 from datetime import datetime
 
-def place_shares_order(symbol, price, currency, action):
+def place_shares_order(symbol, price, qty, currency, action):
     market_code = get_market_code(currency)
     code = f"{market_code}{symbol}"
     trd_market = get_trd_market(currency)
@@ -36,8 +36,6 @@ def place_shares_order(symbol, price, currency, action):
         if len(orders) == 0:  # 如果持仓列表不为空
             print('No order exists')
 
-        # Find the target order to close
-        target_order = None
         for order in orders:
             position_asset_sum += order['qty'] * order['cost_price']
         available_assets -= position_asset_sum
@@ -51,7 +49,7 @@ def place_shares_order(symbol, price, currency, action):
         print("Not allow multiple orders per action")
         # Get positions
         positions = []
-        ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, acc_id=acc_id)
+        ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV)
         if ret == RET_OK:
             positions = data.to_dict('records')
         else:
@@ -59,8 +57,8 @@ def place_shares_order(symbol, price, currency, action):
 
         # Separate with shares and options with the desire code/symbol
         positions = distinguish_shares_and_options(positions, market_code)['shares']
-        if len(positions) == 0:
-            return jsonify({"success": False, "message": "No shares positions"})
+        # if len(positions) == 0:
+        #     return jsonify({"success": False, "message": "No shares positions"})
 
         has_order = False
         for position in positions:
@@ -74,6 +72,8 @@ def place_shares_order(symbol, price, currency, action):
     print(f"allow_assets {allow_assets}")
     print(f"price {price}")
     shares_qty = allow_assets / price  # Shares qty available for long and short (estimate qty only since the price is from request body instead of real-time quote)
+    if qty is not None and qty * price < allow_assets:
+        shares_qty = qty
     print(f"shares_qty {shares_qty}")
 
     print(f"Place order: {code}")
@@ -122,15 +122,14 @@ def close_shares_position(symbol, currency):
     ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV)
     if ret == RET_OK:
         orders = data.to_dict('records')
-        if len(orders) == 0:  # 如果持仓列表不为空
-            return jsonify({"success": False, "message": "No order exists"})
+        # if len(orders) == 0:  # 如果持仓列表不为空
+        #     return jsonify({"success": False, "message": "No order exists"})
         # Find the target order to close
         target_order = None
         for order in orders:
             if order['code'] == code:
                 target_order = order
                 break
-
         if target_order is None:
             print('No order found')
             return jsonify({"success": False, "message": f"Order with {code} was not found"})
@@ -258,8 +257,8 @@ def place_option_order(symbol, price, currency, action, direction):
 
         # Separate with shares and options with the desire code/symbol
         option_positions = distinguish_shares_and_options(option_positions, market_code)['options']
-        if len(option_positions) == 0:
-            return jsonify({"success": False, "message": "No option positions"})
+        # if len(option_positions) == 0:
+        #     return jsonify({"success": False, "message": "No option positions"})
 
         # Separate with calls and puts
         option_positions = separate_calls_puts(option_positions)

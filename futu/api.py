@@ -74,9 +74,9 @@ def shutdown_worker():
 @with_app_context
 def process_place_order(req):
     time.sleep(API_QUEUE_DELAY)  # Artificial delay to demonstrate queue working
-
     code = req.get('code')
     price = float(req.get('price'))
+    qty = float(req.get('qty'))
     action = req.get('action')
     currency = req.get('currency')
     trade_type = req.get('type')
@@ -88,7 +88,8 @@ def process_place_order(req):
         return jsonify({"success": False, "message": "Code not provided"}), 400
 
     if trade_type == TradeType.Shares.value:
-        return place_shares_order(code, price, currency, action)
+        print(code, price, qty, currency, action)
+        return place_shares_order(code, price, qty, currency, action)
     elif trade_type == TradeType.Option.value:
         direction = req.get('direction')
         if direction is None:
