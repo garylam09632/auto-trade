@@ -165,8 +165,8 @@ __TrdEnv.REAL__：訂單將使用真實資金執行
 - **ALLOW_MULTIPLE_ORDER_PER_DIRECTION** = False  
   是否允許在同一方向（買入/賣出）下多個訂單。設置為False時，系統會檢查是否已有相同方向的未完成訂單。
 
-- **API_QUEUE_TIMEOUT** = 2  
-  API請求隊列的超時時間（秒）。如果系統在指定時間內無法處理請求，將返回超時錯誤。
+- **API_QUEUE_DELAY** = 2  
+  API請求隊列的延遲時間（秒）。
 
 ### 建議配置
 

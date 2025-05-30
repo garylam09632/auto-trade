@@ -73,7 +73,7 @@ def shutdown_worker():
 
 @with_app_context
 def process_place_order(req):
-    time.sleep(API_QUEUE_TIMEOUT)  # Artificial delay to demonstrate queue working
+    time.sleep(API_QUEUE_DELAY)  # Artificial delay to demonstrate queue working
 
     code = req.get('code')
     price = float(req.get('price'))
@@ -100,7 +100,7 @@ def process_place_order(req):
 
 @with_app_context
 def process_close_position(req):
-    time.sleep(API_QUEUE_TIMEOUT)  # Artificial delay to demonstrate queue working
+    time.sleep(API_QUEUE_DELAY)  # Artificial delay to demonstrate queue working
     code = req.get('code')
     direction = req.get('direction')
     currency = req.get('currency')
