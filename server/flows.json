@@ -14,6 +14,12 @@
         "wholemsg": "false"
     },
     {
+        "id": "81ffa631ea040f34",
+        "type": "websocket-listener",
+        "path": "wss://chatgpt.oyuimiruku.com/ws/shares",
+        "wholemsg": "false"
+    },
+    {
         "id": "f294b90c4322640f",
         "type": "websocket in",
         "z": "c9fc2f3e7bf5b6dc",
@@ -21,7 +27,7 @@
         "server": "3239cb93680a00b1",
         "client": "",
         "x": 380,
-        "y": 320,
+        "y": 180,
         "wires": [
             [
                 "5e9940974d094b12"
@@ -37,7 +43,7 @@
         "action": "",
         "pretty": false,
         "x": 290,
-        "y": 400,
+        "y": 260,
         "wires": [
             [
                 "9ec8be9016f25952"
@@ -60,8 +66,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 860,
-        "y": 180,
+        "x": 1120,
+        "y": 320,
         "wires": [
             []
         ]
@@ -89,7 +95,7 @@
         "repair": false,
         "outputs": 2,
         "x": 430,
-        "y": 400,
+        "y": 260,
         "wires": [
             [
                 "416a1714c6e601f4"
@@ -111,8 +117,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 670,
-        "y": 180,
+        "x": 930,
+        "y": 320,
         "wires": [
             [
                 "adbae0f592eac34f"
@@ -135,8 +141,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 860,
-        "y": 240,
+        "x": 1120,
+        "y": 380,
         "wires": [
             []
         ]
@@ -157,8 +163,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 890,
-        "y": 300,
+        "x": 1150,
+        "y": 440,
         "wires": [
             []
         ]
@@ -179,8 +185,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 870,
-        "y": 400,
+        "x": 1130,
+        "y": 540,
         "wires": [
             []
         ]
@@ -197,8 +203,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 670,
-        "y": 400,
+        "x": 930,
+        "y": 540,
         "wires": [
             [
                 "35ffc88c7e717eef"
@@ -221,8 +227,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 860,
-        "y": 460,
+        "x": 1120,
+        "y": 600,
         "wires": [
             []
         ]
@@ -243,8 +249,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 900,
-        "y": 520,
+        "x": 1160,
+        "y": 660,
         "wires": [
             []
         ]
@@ -261,8 +267,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 670,
-        "y": 240,
+        "x": 930,
+        "y": 380,
         "wires": [
             []
         ]
@@ -279,8 +285,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 670,
-        "y": 300,
+        "x": 930,
+        "y": 440,
         "wires": [
             []
         ]
@@ -297,8 +303,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 670,
-        "y": 460,
+        "x": 930,
+        "y": 600,
         "wires": [
             []
         ]
@@ -315,8 +321,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 670,
-        "y": 520,
+        "x": 930,
+        "y": 660,
         "wires": [
             []
         ]
@@ -389,6 +395,70 @@
         "wires": [
             [
                 "fd9f6431292a6fd0"
+            ]
+        ]
+    },
+    {
+        "id": "5bd10ba359553073",
+        "type": "websocket in",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "",
+        "server": "81ffa631ea040f34",
+        "client": "",
+        "x": 390,
+        "y": 380,
+        "wires": [
+            [
+                "f0d04691b6515274"
+            ]
+        ]
+    },
+    {
+        "id": "f0d04691b6515274",
+        "type": "json",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 310,
+        "y": 460,
+        "wires": [
+            [
+                "b446de76f2b91208"
+            ]
+        ]
+    },
+    {
+        "id": "b446de76f2b91208",
+        "type": "switch",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "",
+        "property": "payload.action",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "BUY",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SELL",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 450,
+        "y": 460,
+        "wires": [
+            [
+                "416a1714c6e601f4"
+            ],
+            [
+                "1169a0422b722081"
             ]
         ]
     }
