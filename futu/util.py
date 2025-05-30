@@ -47,6 +47,30 @@ def place_shares_order(symbol, price, currency, action):
     if allow_assets > available_assets:
         allow_assets = available_assets
 
+    if not ALLOW_MULTIPLE_ORDER_PER_DIRECTION:
+        print("Not allow multiple orders per action")
+        # Get positions
+        positions = []
+        ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, acc_id=acc_id)
+        if ret == RET_OK:
+            positions = data.to_dict('records')
+        else:
+            return jsonify({"success": False, "message": "Query position error"})
+
+        # Separate with shares and options with the desire code/symbol
+        positions = distinguish_shares_and_options(positions, market_code)['shares']
+        if len(positions) == 0:
+            return jsonify({"success": False, "message": "No shares positions"})
+
+        has_order = False
+        for position in positions:
+            if position['qty'] > 0:
+                has_order = True
+
+        if has_order:
+            return jsonify({"success": False, "message": f"Already has {'LONG' if action == Action.Buy.value else 'SHORT'} positions"})
+
+
     print(f"allow_assets {allow_assets}")
     print(f"price {price}")
     shares_qty = allow_assets / price  # Shares qty available for long and short (estimate qty only since the price is from request body instead of real-time quote)
@@ -168,13 +192,20 @@ def place_option_order(symbol, price, currency, action, direction):
     if not options or "calls" not in options or "puts" not in options:
         return False  # Early exit if invalid structure
 
+    # Use the maximum index if the index is out of range
+    call_index = OPTION_CALL_INDEX
+    put_index = OPTION_PUT_INDEX
+    if call_index < 0 or put_index < 0:
+        call_index = 0 # Use the minimum index if the index is less than 0
+        put_index = 0 # Use the minimum index if the index is less than 0
     # Ensure the indices are within bounds
-    if OPTION_CALL_INDEX >= len(options["calls"]) or OPTION_PUT_INDEX >= len(options["puts"]):
-        return False  # Avoid "IndexError: list index out of range"
+    if call_index >= len(options["calls"]) or put_index >= len(options["puts"]):
+        call_index = len(options["calls"]) - 1
+        put_index = len(options["puts"]) - 1
 
     # Safely access the options
-    target_call = options["calls"][OPTION_CALL_INDEX]
-    target_put = options["puts"][OPTION_PUT_INDEX]
+    target_call = options["calls"][call_index]
+    target_put = options["puts"][put_index]
 
     # Assume direction value must be valid
     if direction == Direction.Call.value:
