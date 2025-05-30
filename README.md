@@ -24,20 +24,21 @@
 安裝後，導航到安裝目錄並編輯`FutuOpenD.xml`文件：
 
 ```xml
-
-    
-    
-    127.0.0.1
-    
-    11111
-    
-    {{ 你的富途ID }}
-     
-    6e55f158a827b1a1c4321a245aaaad88 -->
-     
-    {{ 你的密碼 }}
-    
-    en 
+<futu_opend>
+    <!-- Basic parameters -->
+    <!-- Listening address. 127.0.0.1 by default -->
+    <ip>127.0.0.1</ip>
+    <!-- API interface protocol listening port -->
+    <api_port>11111</api_port>
+    <!-- Login account -->
+    <login_account>{{ Your Futu ID }}</login_account>
+    <!-- Login password, 32-bit MD5 encrypted hexadecimal --> 
+    <!-- <login_pwd_md5>6e55f158a827b1a1c4321a245aaaad88</login_pwd_md5> -->
+    <!-- Plain text of login password. When cypher text exists, the cypher text will be used. --> 
+    <login_pwd>{{ Your Password }}</login_pwd>
+    <!-- FutuOpenD language. en: English, chs: Simplified Chinese -->
+    <lang>en</lang> <!-- Use English to avoid encoding issues -->
+   <!-- Rest with no changes -->
 ```
 
 只更改`{{ }}`內的部分。
