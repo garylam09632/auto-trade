@@ -56,7 +56,7 @@ def place_shares_order(symbol, price, qty, currency, action):
             return jsonify({"success": False, "message": "Query position error"})
 
         # Separate with shares and options with the desire code/symbol
-        positions = distinguish_shares_and_options(positions, market_code)['shares']
+        positions = distinguish_shares_and_options(positions, code)['shares']
         # if len(positions) == 0:
         #     return jsonify({"success": False, "message": "No shares positions"})
 
