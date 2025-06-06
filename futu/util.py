@@ -440,7 +440,7 @@ def get_target_option_code(code, price):
         #     return None
             
         # Select date based on day of week
-        if is_thurs_or_fri:
+        if is_thurs_or_fri and not TRADE_EXPIRY_OPTION:
             # Thursday/Friday - select the next expiration date (skip nearest)
             if len(strike_dates) > 1:
                 selected_date = strike_dates[1]  # Second future date
