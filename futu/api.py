@@ -76,10 +76,13 @@ def process_place_order(req):
     time.sleep(API_QUEUE_DELAY)  # Artificial delay to demonstrate queue working
     code = req.get('code')
     price = float(req.get('price'))
-    qty = float(req.get('qty'))
+    qty = req.get('qty')
     action = req.get('action')
     currency = req.get('currency')
     trade_type = req.get('type')
+
+    if qty is not None:
+        qty = float(qty)
 
     if currency is None:
         currency = DEFAULT_TRADING_CURRENCY

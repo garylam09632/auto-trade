@@ -3,7 +3,7 @@ from futu import TrdEnv
 FUTU_OPEN_D_HOST = '127.0.0.1'
 FUTU_OPEN_D_PORT = 11111
 FUTU_TRADE_PWD = '963527' # Use in real environment
-FUTU_ENV = TrdEnv.SIMULATE # Switch to REAL, for real trade
+FUTU_ENV = TrdEnv.REAL # Switch to REAL, for real trade
 DEFAULT_TRADING_CURRENCY = "USD"
 SHARES_ORDER_PERCENTAGE_PER_STOCK = 0.25
 OPTION_MAX_PER_TYPE = 3
