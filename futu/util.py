@@ -252,16 +252,18 @@ def place_option_order(symbol, price, currency, action, direction):
         ret, data = trd_ctx.position_list_query(trd_env=FUTU_ENV, acc_id=acc_id)
         if ret == RET_OK:
             option_positions = data.to_dict('records')
+            print(f"option_positions {option_positions}")
         else:
             return jsonify({"success": False, "message": "Query position error"})
 
         # Separate with shares and options with the desire code/symbol
         option_positions = distinguish_shares_and_options(option_positions, market_code)['options']
+  
         # if len(option_positions) == 0:
         #     return jsonify({"success": False, "message": "No option positions"})
 
         # Separate with calls and puts
-        option_positions = separate_calls_puts(option_positions)
+        option_positions = separate_calls_puts(option_positions, symbol)
 
         # If the closing direction is call, only close call positions, else close put positions
         if direction == Direction.Call.value:
@@ -367,7 +369,7 @@ def close_option_position(symbol, currency, direction):
         return jsonify({"success": False, "message": "No option positions"})
 
     # Separate with calls and puts
-    option_positions = separate_calls_puts(option_positions)
+    option_positions = separate_calls_puts(option_positions, symbol)
 
     # print(f"Separate {direction} positions = {option_positions}")
 
@@ -377,7 +379,8 @@ def close_option_position(symbol, currency, direction):
     else:
         option_positions = option_positions['puts']
 
-    print(f"All {direction} positions = {[option["code"] for option in option_positions]}")
+    positions = [option["code"] for option in option_positions]
+    print(f"All {direction} positions = {positions}")
 
     # Unlock trade authority
     if FUTU_ENV == TrdEnv.REAL:
@@ -522,7 +525,7 @@ def distinguish_shares_and_options(positions, code=None):
         'options': options
     }
 
-def separate_calls_puts(options):
+def separate_calls_puts(options, symbol):
     """
     Separate options into calls and puts based on their codes and names.
     
@@ -536,9 +539,9 @@ def separate_calls_puts(options):
     puts = []
     
     for option in options:
-        # print(f"Separating {option}")
-        stock_name = option['stock_name'].split(' ')
-        direction = stock_name[2] # Last index will be {price}{direction} e.g. 120.00C
+        print(f"Separating {option}")
+        stock_name = option['stock_name'].split(symbol)
+        direction = stock_name[1] # Last index will be {price}{direction} e.g. 120.00C
         # Check if it's a call (either 'C' in code or 'call' in name)
         is_call = 'C' in direction
         

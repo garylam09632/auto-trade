@@ -62,7 +62,6 @@
         "tls": "",
         "persist": false,
         "proxy": "",
-        "insecureHTTPParser": false,
         "authType": "",
         "senderr": false,
         "headers": [],
@@ -110,9 +109,8 @@
         "type": "function",
         "z": "c9fc2f3e7bf5b6dc",
         "name": "config",
-        "func": "const endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/place-order`;\nmsg.method = 'POST';\nnode.warn(msg.url)\nnode.warn(msg.payload)\nreturn msg;",
+        "func": "const endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/place-order`;\nmsg.method = 'POST';\nnode.warn(msg.url)\nnode.warn(msg.payload)\n\nmsg.payload = {\n    code: \"TSLA\",\n    price: 329.25,\n    type: \"OPTION\",\n    currency: \"USD\",\n    action: \"BUY\",\n    direction: \"CALL\"\n}\nreturn msg;",
         "outputs": 1,
-        "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -137,7 +135,6 @@
         "tls": "",
         "persist": false,
         "proxy": "",
-        "insecureHTTPParser": false,
         "authType": "",
         "senderr": false,
         "headers": [],
@@ -159,7 +156,6 @@
         "tls": "",
         "persist": false,
         "proxy": "",
-        "insecureHTTPParser": false,
         "authType": "",
         "senderr": false,
         "headers": [],
@@ -181,7 +177,6 @@
         "tls": "",
         "persist": false,
         "proxy": "",
-        "insecureHTTPParser": false,
         "authType": "",
         "senderr": false,
         "headers": [],
@@ -198,7 +193,6 @@
         "name": "config",
         "func": "node.warn(msg.payload)\nconst endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/close-position`;\nreturn msg;",
         "outputs": 1,
-        "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -223,7 +217,6 @@
         "tls": "",
         "persist": false,
         "proxy": "",
-        "insecureHTTPParser": false,
         "authType": "",
         "senderr": false,
         "headers": [],
@@ -245,7 +238,6 @@
         "tls": "",
         "persist": false,
         "proxy": "",
-        "insecureHTTPParser": false,
         "authType": "",
         "senderr": false,
         "headers": [],
@@ -262,7 +254,6 @@
         "name": "config",
         "func": "const endpoint = global.get(\"ibApiEndpoint\");\nmsg.url = `${endpoint}/place-order`; // modify\nmsg.method = 'POST';\nreturn msg;",
         "outputs": 1,
-        "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -280,7 +271,6 @@
         "name": "config",
         "func": "const endpoint = global.get(\"ibPaperTradeApiEndpoint\");\nmsg.url = `${endpoint}/place-order`; // modify\nmsg.method = 'POST';\nreturn msg;",
         "outputs": 1,
-        "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -298,7 +288,6 @@
         "name": "config",
         "func": "const endpoint = global.get(\"ibApiEndpoint\");\nmsg.url = `${endpoint}/place-order`; // modify\nmsg.method = 'POST';\nreturn msg;",
         "outputs": 1,
-        "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -316,7 +305,6 @@
         "name": "config",
         "func": "const endpoint = global.get(\"ibPaperTradeApiEndpoint\");\nmsg.url = `${endpoint}/place-order`; // modify\nmsg.method = 'POST';\nreturn msg;",
         "outputs": 1,
-        "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -334,7 +322,6 @@
         "name": "close TSLA",
         "func": "msg.payload = {\n    code: \"TSLA\",\n    type: \"OPTION\",\n    action: \"SELL\",\n    direction: \"PUT\"\n}\nconst endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/close-position`;\nreturn msg;",
         "outputs": 1,
-        "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -359,7 +346,6 @@
         "tls": "",
         "persist": false,
         "proxy": "",
-        "insecureHTTPParser": false,
         "authType": "",
         "senderr": false,
         "headers": [],
@@ -457,6 +443,35 @@
             ],
             [
                 "1169a0422b722081"
+            ]
+        ]
+    },
+    {
+        "id": "5b9b521c3ba062d6",
+        "type": "inject",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 800,
+        "y": 220,
+        "wires": [
+            [
+                "416a1714c6e601f4"
             ]
         ]
     }
