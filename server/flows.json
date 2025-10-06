@@ -20,6 +20,18 @@
         "wholemsg": "false"
     },
     {
+        "id": "7b5a6cc4b2b6c7be",
+        "type": "websocket-listener",
+        "path": "/ws://129.146.185.66:5001/ws/shares",
+        "wholemsg": "false"
+    },
+    {
+        "id": "ca4c519f4b091095",
+        "type": "websocket-listener",
+        "path": "wss://pokerchipstacks.com/ws/shares",
+        "wholemsg": "false"
+    },
+    {
         "id": "f294b90c4322640f",
         "type": "websocket in",
         "z": "c9fc2f3e7bf5b6dc",
@@ -29,9 +41,7 @@
         "x": 380,
         "y": 180,
         "wires": [
-            [
-                "5e9940974d094b12"
-            ]
+            []
         ]
     },
     {
@@ -109,7 +119,7 @@
         "type": "function",
         "z": "c9fc2f3e7bf5b6dc",
         "name": "config",
-        "func": "const endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/place-order`;\nmsg.method = 'POST';\nnode.warn(msg.url)\nnode.warn(msg.payload)\n\nmsg.payload = {\n    code: \"TSLA\",\n    price: 329.25,\n    type: \"OPTION\",\n    currency: \"USD\",\n    action: \"BUY\",\n    direction: \"CALL\"\n}\nreturn msg;",
+        "func": "const endpoint = global.get(\"futuApiEndpoint\");\nmsg.url = `${endpoint}/futu/place-order`;\nmsg.method = 'POST';\nnode.warn(msg.url)\nnode.warn(msg.payload)\n\n// msg.payload = {\n//     code: \"NVDA\",\n//     qty: 1,\n//     price: 180.19,\n//     type: \"SHARES\",\n//     currency: \"USD\",\n//     action: \"BUY\",\n//     direction: \"CALL\"\n// }\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -392,7 +402,7 @@
         "server": "81ffa631ea040f34",
         "client": "",
         "x": 390,
-        "y": 380,
+        "y": 680,
         "wires": [
             []
         ]
@@ -405,44 +415,11 @@
         "property": "payload",
         "action": "",
         "pretty": false,
-        "x": 310,
-        "y": 460,
-        "wires": [
-            [
-                "b446de76f2b91208"
-            ]
-        ]
-    },
-    {
-        "id": "b446de76f2b91208",
-        "type": "switch",
-        "z": "c9fc2f3e7bf5b6dc",
-        "name": "",
-        "property": "payload.action",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "eq",
-                "v": "BUY",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "SELL",
-                "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 450,
-        "y": 460,
+        "x": 650,
+        "y": 440,
         "wires": [
             [
                 "416a1714c6e601f4"
-            ],
-            [
-                "1169a0422b722081"
             ]
         ]
     },
@@ -472,6 +449,21 @@
         "wires": [
             [
                 "416a1714c6e601f4"
+            ]
+        ]
+    },
+    {
+        "id": "e93c6087ff969606",
+        "type": "websocket in",
+        "z": "c9fc2f3e7bf5b6dc",
+        "name": "",
+        "server": "ca4c519f4b091095",
+        "client": "",
+        "x": 380,
+        "y": 440,
+        "wires": [
+            [
+                "f0d04691b6515274"
             ]
         ]
     }
